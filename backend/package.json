@@ -1,8 +1,8 @@
 {
-  "name": "backend",
+  "name": "jal-rakshak-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Jal Rakshak - AI-Powered Flash Flood Prediction Backend",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
