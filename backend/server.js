@@ -25,7 +25,34 @@ async function connectDB() {
     process.exit(1);
   }
 }
+function generateAdvisory(sensorData, riskScore, riskTier) {
+  const { nodeId, waterLevel, blockageSeverity } = sensorData;
 
+  const messages = {
+    worker: `[${riskTier}] Node ${nodeId}: Water level ${waterLevel}cm, blockage severity ${blockageSeverity}. ${
+      riskTier === 'Critical'
+        ? 'Clear the drainage point immediately and report status.'
+        : 'Inspect and clear blockage at earliest opportunity.'
+    }`,
+    resident: `[${riskTier}] Flood risk near your area (score ${riskScore}/100). ${
+      riskTier === 'Critical'
+        ? 'Move to higher ground now and avoid the river path.'
+        : 'Stay alert and avoid low-lying areas nearby.'
+    }`,
+    officer: `[${riskTier}] Node ${nodeId} reporting risk score ${riskScore}/100. Water level ${waterLevel}cm. ${
+      riskTier === 'Critical'
+        ? 'Recommend dispatching evacuation support to this zone.'
+        : 'Monitor closely, prepare response team if risk escalates.'
+    }`,
+    volunteer: `[${riskTier}] Node ${nodeId} at elevated risk. ${
+      riskTier === 'Critical'
+        ? 'Report to coordination point immediately for evacuation assistance.'
+        : 'Stand by near the affected zone for possible mobilization.'
+    }`,
+  };
+
+  return messages;
+}
 // Connect to Mosquitto Broker
 const mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
@@ -79,11 +106,16 @@ mqttClient.on('message', async (topic, message) => {
       location: sensorData.location,
     });
 
-    const saved = await reading.save();
-    console.log('Saved to Jal Rakshak DB:', saved._id);
-    
-    // LIVE UPDATE: Push this new reading to the React dashboard instantly!
-    io.emit('new-reading', saved);
+const saved = await reading.save();
+console.log('Saved to Jal Rakshak DB:', saved._id);
+
+let advisory = null;
+if (riskTier === 'Warning' || riskTier === 'Critical') {
+  advisory = generateAdvisory(sensorData, riskScore, riskTier);
+  console.log('Advisory generated:', advisory);
+}
+
+io.emit('new-reading', { ...saved.toObject(), advisory });
 
     console.log(`---------------------------------\n`);
   } catch (err) {
