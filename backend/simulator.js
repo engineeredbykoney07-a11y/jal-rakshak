@@ -1,5 +1,5 @@
 const mqtt = require('mqtt');
-const client = mqtt.connect('mqtt://test.mosquitto.org');
+const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
 client.on('connect', () => {
   console.log('Simulator connected to broker. Sending fake data...');
@@ -12,8 +12,8 @@ client.on('connect', () => {
     location: { lat: 30.4, lng: 79.1 }
   };
 
-  client.publish('jalrakshak/sensors', JSON.stringify(fakeData), () => {
+  client.publish('jalrakshak/sensors', JSON.stringify(fakeData), { qos: 1 }, () => {
     console.log('Data sent:', fakeData);
-    process.exit(0);
+    setTimeout(() => process.exit(0), 1000); // wait 1 second before closing
   });
 });

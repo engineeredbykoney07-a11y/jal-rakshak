@@ -27,13 +27,20 @@ async function connectDB() {
 }
 
 // Connect to Mosquitto Broker
-const mqttClient = mqtt.connect('mqtt://test.mosquitto.org');
+const mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
 mqttClient.on('connect', () => {
   console.log('Connected to Mosquitto MQTT broker');
   mqttClient.subscribe('jalrakshak/sensors', (err) => {
     if (!err) console.log('Subscribed to topic: jalrakshak/sensors');
   });
+});
+mqttClient.on('error', (err) => {
+  console.error('MQTT connection error:', err.message);
+});
+
+mqttClient.on('offline', () => {
+  console.log('MQTT client went offline — retrying...');
 });
 
 // Socket.io Connection Log

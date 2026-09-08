@@ -19,12 +19,12 @@ const sensorReadingSchema = new mongoose.Schema({
   },
   riskScore: {
     type: Number,
-    default: 0,
+    required: true,
   },
   riskTier: {
     type: String,
-    enum: ['Low', 'Warning', 'Critical'],
-    default: 'Low',
+    enum: ['Low', 'Warning', 'Critical'], // only allows these three values
+    required: true,
   },
   location: {
     lat: { type: Number },
