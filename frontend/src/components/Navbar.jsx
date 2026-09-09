@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Home, LayoutDashboard, GitMerge } from 'lucide-react';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -11,16 +12,17 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { path: '/', label: t('nav.home') },
-    { path: '/dashboard', label: t('nav.dashboard') },
-    { path: '/how-it-works', label: t('nav.how_it_works') },
+    { path: '/', label: t('nav.home'), icon: <Home size={18} /> },
+    { path: '/dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
+    { path: '/how-it-works', label: t('nav.how_it_works'), icon: <GitMerge size={18} /> },
   ];
 
   return (
     <nav className="nav">
       <div className="nav-logo">
         <Link to="/">
-          <span className="logo-badge">✦</span> Jal Rakshak
+          <img src="/logo.png" alt="Jal Rakshak Logo" />
+          <span>Jal Rakshak</span>
         </Link>
       </div>
       <div className="nav-links">
@@ -30,18 +32,19 @@ const Navbar = () => {
             to={link.path}
             className={`nav-link ${location.pathname === link.path ? 'active' : ''}`}
           >
-            {link.label}
+            {link.icon}
+            <span>{link.label}</span>
           </Link>
         ))}
         <select 
           className="lang-switch" 
           onChange={changeLanguage} 
           value={i18n.language}
-          aria-label="Select Language"
+          aria-label="Language Selector"
         >
           <option value="en">English</option>
-          <option value="hi">हिन्दी (Hindi)</option>
-          <option value="te">తెలుగు (Telugu)</option>
+          <option value="hi">हिन्दी</option>
+          <option value="te">తెలుగు</option>
         </select>
       </div>
     </nav>

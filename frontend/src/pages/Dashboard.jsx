@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import io from 'socket.io-client';
+import { Bell, ShieldAlert, CheckCircle2, AlertTriangle, Radio, Activity, Send } from 'lucide-react';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -21,25 +22,27 @@ function ChangeView({ center, zoom }) {
 const Dashboard = () => {
   const { t } = useTranslation();
   const socketRef = useRef(null);
-  const [userLocation, setUserLocation] = useState([30.0668, 79.0193]); // Default Uttarakhand
+  const [userLocation, setUserLocation] = useState([30.0668, 79.0193]);
   const [readings, setReadings] = useState([]);
   const [officialAlerts, setOfficialAlerts] = useState([]);
+  const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [subStatus, setSubStatus] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [activeTab, setActiveTab] = useState('alerts'); // 'alerts' | 'subscribe'
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-        () => console.log('Geolocation denied, using default')
+        () => console.log('Using default geolocation')
       );
     }
 
     fetch('http://localhost:5000/api/official-alerts?state=uttarakhand')
       .then(res => res.json())
       .then(data => setOfficialAlerts(data || []))
-      .catch(err => console.error('Error fetching official alerts', err));
+      .catch(err => console.error('Alerts error', err));
 
     const socket = io('http://localhost:5000', {
       reconnection: true,
@@ -63,24 +66,12 @@ const Dashboard = () => {
       });
     });
 
-    socket.on('advisoryUpdate', (data) => {
-      setReadings(prev => {
-        const existing = prev.findIndex(r => r.id === data.id);
-        if (existing !== -1) {
-          const updated = [...prev];
-          updated[existing] = { ...updated[existing], advisory: data.advisory };
-          return updated;
-        }
-        return prev;
-      });
-    });
-
     return () => socket.disconnect();
   }, []);
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!consent) {
+    if (!consent || !phone) {
       setSubStatus('error');
       return;
     }
@@ -89,7 +80,7 @@ const Dashboard = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phoneNumber: '+910000000000',
+          phoneNumber: phone,
           locationId: 'ridgeroad',
           language: 'en',
           consentGiven: consent
@@ -102,38 +93,68 @@ const Dashboard = () => {
     }
   };
 
+  const getTierClass = (tier) => {
+    switch (tier?.toLowerCase()) {
+      case 'evacuate': return 'badge-evacuate';
+      case 'warning': return 'badge-warning';
+      case 'watch': return 'badge-watch';
+      default: return 'badge-normal';
+    }
+  };
+
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h2>{t('dashboard.title')}</h2>
-        <span style={{ 
+    <div className="dashboard-wrap">
+      {/* Top Header Bar */}
+      <div className="dashboard-bar">
+        <div>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--gov-navy)' }}>
+            {t('dashboard.title')}
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 500 }}>
+            {t('dashboard.subtitle')}
+          </p>
+        </div>
+        
+        <div style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          fontSize: '0.85rem', 
-          fontWeight: 600,
-          color: connected ? 'var(--teal-light)' : '#f87171' 
+          gap: '0.5rem',
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          color: connected ? '#065f46' : '#991b1b',
+          background: connected ? '#d1fae5' : '#fee2e2',
+          padding: '0.4rem 0.95rem',
+          borderRadius: '999px',
+          border: `1.5px solid ${connected ? '#a7f3d0' : '#fecaca'}`
         }}>
           <span style={{
-            width: '8px',
-            height: '8px',
+            width: 8,
+            height: 8,
             borderRadius: '50%',
-            backgroundColor: connected ? 'var(--teal-light)' : '#f87171'
+            backgroundColor: connected ? '#10b981' : '#ef4444'
           }}></span>
-          {connected ? 'Live Connected' : 'Reconnecting...'}
-        </span>
+          {connected ? t('dashboard.live_feed') : t('dashboard.connecting')}
+        </div>
       </div>
-      
-      <div className="dash-grid">
-        <div className="map-container">
+
+      <div className="dashboard-layout">
+        {/* Map View */}
+        <div className="map-card">
+          <div className="map-floating-legend">
+            <span style={{ color: '#475569', textTransform: 'uppercase', fontSize: '0.72rem' }}>Tiers:</span>
+            <div className="legend-item"><span className="legend-badge badge-normal"></span> Normal</div>
+            <div className="legend-item"><span className="legend-badge badge-watch"></span> Watch</div>
+            <div className="legend-item"><span className="legend-badge badge-warning"></span> Warning</div>
+            <div className="legend-item"><span className="legend-badge badge-evacuate"></span> Evacuate</div>
+          </div>
+
           <MapContainer center={userLocation} zoom={8} style={{ height: '100%', width: '100%' }}>
-            {/* High contrast basemap layer */}
-            <TileLayer 
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+            <TileLayer
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; OpenStreetMap'
             />
             <ChangeView center={userLocation} zoom={8} />
-            
+
             <Marker position={userLocation}>
               <Popup>{t('dashboard.your_location')}</Popup>
             </Marker>
@@ -141,13 +162,15 @@ const Dashboard = () => {
             {readings.map(r => (
               <Marker key={r.id} position={r.coords}>
                 <Popup>
-                  <div style={{ color: '#0f172a' }}>
-                    <strong>{r.name}</strong><br/>
-                    <span className={`tier-badge tier-${r.tier}`}>{r.tier}</span>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-                      <div>Score: <b>{r.score}/100</b></div>
-                      <div>Confidence: <b>{r.confidence}</b></div>
+                  <div style={{ padding: '0.25rem' }}>
+                    <strong style={{ fontSize: '0.95rem' }}>{r.name}</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', margin: '0.35rem 0' }}>
+                      <span className={`legend-badge ${getTierClass(r.tier)}`}></span>
+                      <span style={{ fontWeight: 700 }}>{r.tier}</span>
                     </div>
+                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                      {t('dashboard.score')}: {r.score}/100 | {t('dashboard.confidence')}: {r.confidence}
+                    </p>
                   </div>
                 </Popup>
               </Marker>
@@ -155,89 +178,104 @@ const Dashboard = () => {
           </MapContainer>
         </div>
 
-        <div className="sidebar">
-          {/* Subscribe Card */}
-          <div className="card">
-            <h3>{t('dashboard.subscribe_title')}</h3>
-            <form onSubmit={handleSubscribe} className="subscribe-form">
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Your device will be connected for automated voice and SMS emergency notifications.
-              </p>
-              <label className="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  checked={consent}
-                  onChange={e => setConsent(e.target.checked)}
-                />
-                {t('dashboard.consent')}
-              </label>
-              <button type="submit" className="btn" style={{ width: '100%' }}>
-                {t('dashboard.subscribe_btn')}
+        {/* Streamlined Right Sidebar */}
+        <div className="sidebar-container">
+          <div className="compact-panel">
+            {/* Tab Controls */}
+            <div className="sidebar-tabs">
+              <button
+                className={`sidebar-tab-btn ${activeTab === 'alerts' ? 'active' : ''}`}
+                onClick={() => setActiveTab('alerts')}
+              >
+                <ShieldAlert size={16} /> Official Alerts
               </button>
-              {subStatus === 'success' && <p style={{ color: 'var(--teal-light)', fontSize: '0.85rem' }}>{t('dashboard.success')}</p>}
-              {subStatus === 'error' && <p style={{ color: '#f87171', fontSize: '0.85rem' }}>{t('dashboard.error')}</p>}
-            </form>
-          </div>
+              <button
+                className={`sidebar-tab-btn ${activeTab === 'subscribe' ? 'active' : ''}`}
+                onClick={() => setActiveTab('subscribe')}
+              >
+                <Bell size={16} /> Subscribe Alerts
+              </button>
+            </div>
 
-          {/* Official Alerts Feed */}
-          <div className="official-alerts-panel">
-            <h3 style={{ fontSize: '1rem', color: 'var(--teal-light)', marginBottom: '0.8rem' }}>
-              Cross-Referenced Alerts
-            </h3>
-            {officialAlerts.length === 0 ? (
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                No active external warnings for this sector.
-              </div>
-            ) : (
-              officialAlerts.map((alert, idx) => (
-                <div key={idx} className="official-alert-item">
-                  <div className="official-alert-title">{alert.title}</div>
-                  <div className="official-alert-desc">
-                    {alert.contentSnippet ? (alert.contentSnippet.length > 90 ? alert.contentSnippet.substring(0, 90) + '...' : alert.contentSnippet) : 'See bulletin details.'}
-                  </div>
-                  <div className="official-alert-meta">
-                    <span>NDMA SACHET</span>
-                    <span>{new Date(alert.pubDate).toLocaleDateString()}</span>
-                  </div>
+            {/* Tab 1: Official NDMA & Sensor Alerts */}
+            {activeTab === 'alerts' && (
+              <div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
+                    Regional Escalation Feed
+                  </span>
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Live Sensor Readings */}
-          <div className="status-cards">
-            {readings.map(r => (
-              <div key={r.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                  <h3>{r.name}</h3>
-                  <span className={`tier-badge tier-${r.tier}`}>{r.tier}</span>
-                </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                  Score: <span className="mono-readout">{r.score}</span>/100 | Confidence: {r.confidence}
-                </p>
-
-                {r.advisory && (
-                  <div className="advisory-grid">
-                    <div className="advisory-card">
-                      <span className="role-tag">Resident</span>
-                      <p>{r.advisory.resident}</p>
-                    </div>
-                    <div className="advisory-card">
-                      <span className="role-tag">Officer</span>
-                      <p>{r.advisory.officer}</p>
-                    </div>
-                    <div className="advisory-card">
-                      <span className="role-tag">Worker</span>
-                      <p>{r.advisory.worker}</p>
-                    </div>
-                    <div className="advisory-card">
-                      <span className="role-tag">Volunteer</span>
-                      <p>{r.advisory.volunteer}</p>
-                    </div>
+                {officialAlerts.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '1.5rem 0', color: '#94a3b8' }}>
+                    <Activity size={28} style={{ opacity: 0.5, marginBottom: '0.5rem' }} />
+                    <p style={{ fontSize: '0.85rem' }}>{t('dashboard.no_alerts')}</p>
                   </div>
+                ) : (
+                  officialAlerts.map((a, i) => (
+                    <div key={i} className="alert-pill-box">
+                      <h5>{a.title}</h5>
+                      <p>{a.contentSnippet || 'Refer to regional bulletin.'}</p>
+                    </div>
+                  ))
                 )}
+
+                {/* Quick Sensor Readout Strip */}
+                <div style={{ marginTop: '1.25rem', borderTop: '1.5px solid var(--gov-border-subtle)', paddingTop: '1rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
+                    Telemetry Health
+                  </span>
+                  <div className="quick-status-strip">
+                    <div className="quick-status-card">
+                      <span>Gateway Node</span>
+                      <strong style={{ color: '#0066cc' }}>ACTIVE</strong>
+                    </div>
+                    <div className="quick-status-card">
+                      <span>Sync Mode</span>
+                      <strong>MQTT v5</strong>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
+
+            {/* Tab 2: Clean, Styled Subscription Form */}
+            {activeTab === 'subscribe' && (
+              <form onSubmit={handleSubscribe} className="subscribe-form-compact">
+                <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                  {t('dashboard.subscribe_desc')}
+                </p>
+                <input
+                  type="tel"
+                  placeholder="+91 Mobile Number"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  className="input-styled"
+                />
+                <label className="checkbox-wrap">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={e => setConsent(e.target.checked)}
+                  />
+                  <span>{t('dashboard.consent')}</span>
+                </label>
+                <button type="submit" className="btn-sidebar-submit">
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem' }}>
+                    <Send size={15} /> {t('dashboard.subscribe_btn')}
+                  </span>
+                </button>
+                {subStatus === 'success' && (
+                  <p style={{ color: '#10b981', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+                    <CheckCircle2 size={16} /> {t('dashboard.success')}
+                  </p>
+                )}
+                {subStatus === 'error' && (
+                  <p style={{ color: '#ef4444', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+                    <AlertTriangle size={16} /> {t('dashboard.error')}
+                  </p>
+                )}
+              </form>
+            )}
           </div>
         </div>
       </div>

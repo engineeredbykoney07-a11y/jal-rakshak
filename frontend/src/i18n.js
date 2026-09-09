@@ -4,100 +4,178 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      "nav": {
-        "home": "Home",
-        "dashboard": "Live Dashboard",
-        "how_it_works": "How It Works",
-        "about": "About"
+      nav: {
+        home: "Home",
+        dashboard: "Live Dashboard",
+        how_it_works: "How It Works"
       },
-      "home": {
-        "tagline": "AI-Driven Flash Flood Prediction",
-        "subtitle": "Protecting hilly regions with multi-channel, multi-lingual early warnings calibrated by confidence.",
-        "cta": "View Live Dashboard",
-        "live_status": "System Online"
+      home: {
+        live_status: "System Active • Realtime Ingestion",
+        tagline_prefix: "AI-Powered",
+        tagline_highlight: "Early Flash Flood",
+        tagline_suffix: "Defense",
+        subtitle: "Protecting vulnerable mountainous terrain with multi-source sensor streams, high-resolution ERA5 rainfall modeling, and multi-lingual alerts.",
+        cta_dashboard: "View Live Dashboard",
+        cta_pipeline: "How It Works",
+        core_title: "System Performance Core",
+        core_badge: "Calibrated",
+        metric_speed_val: "< 30s",
+        metric_speed_lbl: "Alert Dispatch Latency",
+        metric_era5_val: "ERA5",
+        metric_era5_lbl: "Atmospheric Model",
+        metric_roles_val: "4 Roles",
+        metric_roles_lbl: "Tiered Stakeholder Action",
+        metric_channels_val: "IVR / SMS",
+        metric_channels_lbl: "Offline Voice Dissemination"
       },
-      "dashboard": {
-        "title": "Live Status",
-        "your_location": "Your Location",
-        "subscribe_title": "Get SMS/Voice Alerts",
-        "phone_placeholder": "Phone Number",
-        "consent": "I consent to receive automated SMS and voice calls for emergency alerts.",
-        "subscribe_btn": "Subscribe",
-        "success": "Subscribed successfully!",
-        "error": "Subscription failed. Please check consent and phone number.",
-        "distance": "km away",
-        "score": "Risk Score",
-        "confidence": "Confidence",
-        "advisory_resident": "Resident Alert",
-        "advisory_officer": "Officer Info",
-        "advisory_worker": "Worker Task",
-        "advisory_volunteer": "Volunteer Task"
+      dashboard: {
+        title: "Live Command Status",
+        subtitle: "Real-time telemetry and regional alert triggers",
+        your_location: "Your Current Location",
+        live_feed: "Live Data Feed",
+        connecting: "Connecting to Core...",
+        subscribe_title: "Emergency Alert Broadcast",
+        subscribe_desc: "Subscribe connected terminals to receive automated SMS and regional alerts.",
+        consent: "I consent to receive automated SMS and emergency broadcast voice calls.",
+        subscribe_btn: "Subscribe for Alerts",
+        success: "Terminal subscribed successfully!",
+        error: "Subscription failed. Please confirm consent.",
+        ndma_feed: "NDMA / Official Cross-Feed",
+        no_alerts: "No active government escalations reported for this sector.",
+        sensor_readings: "Active Telemetry Stations",
+        score: "Risk Score",
+        confidence: "Confidence"
+      },
+      how_it_works: {
+        title: "Operational Pipeline",
+        subtitle: "End-to-end flow from telemetry acquisition to emergency alert broadcast.",
+        step_prefix: "Stage 0",
+        steps: [
+          { title: "Sensing Layer", desc: "Ultrasonic sensors stream real-time water levels and culvert blockages continuously." },
+          { title: "Atmospheric Ingestion", desc: "Live meteorological data fused with ERA5 precipitation reanalysis via MQTT brokers." },
+          { title: "Confidence Scoring", desc: "Predictive algorithm calculates weighted risk scores calibrated against terrain slopes." },
+          { title: "Threshold Tiering", desc: "Deterministic classification into Normal, Watch, Warning, and Evacuate protocols." },
+          { title: "Multilingual GenAI", desc: "Role-customized advisories dynamically translated for local residents and responders." },
+          { title: "Omnichannel Push", desc: "Immediate broadcast over IVR voice dialers, SMS gateways, and live command maps." }
+        ]
       }
     }
   },
   hi: {
     translation: {
-      "nav": {
-        "home": "होम",
-        "dashboard": "लाइव डैशबोर्ड",
-        "how_it_works": "यह कैसे काम करता है",
-        "about": "हमारे बारे में"
+      nav: {
+        home: "होम",
+        dashboard: "लाइव डैशबोर्ड",
+        how_it_works: "यह कैसे काम करता है"
       },
-      "home": {
-        "tagline": "AI-आधारित फ्लैश फ्लड भविष्यवाणी",
-        "subtitle": "पहाड़ी क्षेत्रों की सुरक्षा के लिए बहुभाषी, मल्टी-चैनल प्रारंभिक चेतावनी प्रणाली।",
-        "cta": "लाइव डैशबोर्ड देखें",
-        "live_status": "सिस्टम ऑनलाइन"
+      home: {
+        live_status: "सिस्टम सक्रिय • रियल-टाइम डेटा",
+        tagline_prefix: "एआई-संचालित",
+        tagline_highlight: "फ्लैश फ्लड प्रारंभिक",
+        tagline_suffix: "सुरक्षा प्रणाली",
+        subtitle: "सेंसर डेटा, उच्च-रिज़ॉल्यूशन ERA5 वर्षा मॉडलिंग और बहुभाषी अलर्ट के साथ पहाड़ी क्षेत्रों की सुरक्षा।",
+        cta_dashboard: "लाइव डैशबोर्ड देखें",
+        cta_pipeline: "कार्यप्रणाली समझें",
+        core_title: "सिस्टम प्रदर्शन स्थिति",
+        core_badge: "कैलिब्रेटेड",
+        metric_speed_val: "< 30 से.",
+        metric_speed_lbl: "अलर्ट जारी करने का समय",
+        metric_era5_val: "ERA5",
+        metric_era5_lbl: "वायुमंडलीय मॉडल",
+        metric_roles_val: "4 भूमिकाएं",
+        metric_roles_lbl: "विशिष्ट कार्रवाई योजना",
+        metric_channels_val: "IVR / SMS",
+        metric_channels_lbl: "ऑफ़लाइन वॉयस प्रसारण"
       },
-      "dashboard": {
-        "title": "लाइव स्थिति",
-        "your_location": "आपका स्थान",
-        "subscribe_title": "SMS/वॉयस अलर्ट प्राप्त करें",
-        "phone_placeholder": "फ़ोन नंबर",
-        "consent": "मैं आपातकालीन अलर्ट के लिए स्वचालित SMS और वॉयस कॉल प्राप्त करने की सहमति देता/देती हूँ।",
-        "subscribe_btn": "सदस्यता लें",
-        "success": "सफलतापूर्वक सदस्यता ली गई!",
-        "error": "सदस्यता विफल। कृपया सहमति और फ़ोन नंबर जांचें।",
-        "distance": "किमी दूर",
-        "score": "जोखिम स्कोर",
-        "confidence": "विश्वास",
-        "advisory_resident": "निवासी अलर्ट",
-        "advisory_officer": "अधिकारी जानकारी",
-        "advisory_worker": "कार्यकर्ता कार्य",
-        "advisory_volunteer": "स्वयंसेवक कार्य"
+      dashboard: {
+        title: "लाइव कमांड स्थिति",
+        subtitle: "वास्तविक समय टेलीमेट्री और क्षेत्रीय आपातकालीन अलर्ट",
+        your_location: "आपका वर्तमान स्थान",
+        live_feed: "लाइव डेटा कनेक्टेड",
+        connecting: "सिस्टम से जुड़ रहा है...",
+        subscribe_title: "आपातकालीन अलर्ट प्रसारण",
+        subscribe_desc: "स्वचालित एसएमएस और क्षेत्रीय अलर्ट प्राप्त करने के लिए अपना डिवाइस पंजीकृत करें।",
+        consent: "मैं आपातकालीन एसएमएस और वॉयस कॉल अलर्ट प्राप्त करने की सहमति देता/देती हूँ।",
+        subscribe_btn: "अलर्ट के लिए सब्सक्राइब करें",
+        success: "सफलतापूर्वक सब्सक्राइब किया गया!",
+        error: "सब्सक्रिप्शन विफल। कृपया सहमति बॉक्स चेक करें।",
+        ndma_feed: "NDMA / आधिकारिक अलर्ट फ़ीड",
+        no_alerts: "इस क्षेत्र के लिए कोई आधिकारिक चेतावनी जारी नहीं की गई है।",
+        sensor_readings: "सक्रिय टेलीमेट्री स्टेशन",
+        score: "जोखिम स्कोर",
+        confidence: "सटीकता"
+      },
+      how_it_works: {
+        title: "सिस्टम कार्यप्रणाली",
+        subtitle: "सेंसर डेटा संग्रहण से लेकर आपातकालीन प्रसारण तक की प्रक्रिया।",
+        step_prefix: "चरण 0",
+        steps: [
+          { title: "सेंसिंग स्तर", desc: "अल्ट्रासोनिक सेंसर लगातार जल स्तर और रुकावटों की रिपोर्ट करते हैं।" },
+          { title: "वायुमंडलीय डेटा संकलन", desc: "MQTT के माध्यम से ERA5 वर्षा डेटा को लाइव सेंसर के साथ जोड़ा जाता है।" },
+          { title: "जोखिम मूल्यांकन", desc: "पहाड़ी ढलानों के आधार पर एल्गोरिदम जोखिम स्कोर और विश्वसनीयता निर्धारित करता है।" },
+          { title: "चेतावनी स्तर वर्गीकरण", desc: "डेटा को सामान्य, निगरानी, चेतावनी और खाली करने के स्तरों में विभाजित किया जाता है।" },
+          { title: "बहुभाषी एआई सलाह", desc: "अधिकारियों और नागरिकों के लिए उनकी स्थानीय भाषा में विशेष सलाह तैयार होती है।" },
+          { title: "त्वरित अलर्ट डिलीवरी", desc: "आईवीआर वॉयस कॉल, एसएमएस और लाइव मैप के माध्यम से तुरंत अलर्ट भेजा जाता है।" }
+        ]
       }
     }
   },
   te: {
     translation: {
-      "nav": {
-        "home": "హోమ్",
-        "dashboard": "లైవ్ డాష్‌బోర్డ్",
-        "how_it_works": "ఇది ఎలా పనిచేస్తుంది",
-        "about": "మా గురించి"
+      nav: {
+        home: "హోమ్",
+        dashboard: "లైవ్ డాష్‌బోర్డ్",
+        how_it_works: "ఇది ఎలా పనిచేస్తుంది"
       },
-      "home": {
-        "tagline": "AI ఆధారిత ఫ్లాష్ ఫ్లడ్ అంచనా",
-        "subtitle": "బహుభాషా, బహుళ-ఛానల్ ముందస్తు హెచ్చరికలతో కొండ ప్రాంతాలను రక్షించడం.",
-        "cta": "లైవ్ డాష్‌బోర్డ్‌ను వీక్షించండి",
-        "live_status": "సిస్టమ్ ఆన్‌లైన్"
+      home: {
+        live_status: "సిస్టమ్ క్రియాశీలం • రియల్-టైమ్ డేటా",
+        tagline_prefix: "AI-ఆధారిత",
+        tagline_highlight: "ఆకస్మిక వరద ముందస్తు",
+        tagline_suffix: "రక్షణ వ్యవస్థ",
+        subtitle: "సెన్సార్ డేటా, అధిక-రిజల్యూషన్ ERA5 వర్షపాత మోడలింగ్ మరియు బహుభాషా హెచ్చరికలతో కొండ ప్రాంతాల రక్షణ.",
+        cta_dashboard: "లైవ్ డాష్‌బోర్డ్ చూడండి",
+        cta_pipeline: "సిస్టమ్ విధానం",
+        core_title: "సిస్టమ్ పనితీరు",
+        core_badge: "కాలిబ్రేట్ చేయబడింది",
+        metric_speed_val: "< 30 సె.",
+        metric_speed_lbl: "హెచ్చరిక జారీ సమయం",
+        metric_era5_val: "ERA5",
+        metric_era5_lbl: "వాతావరణ మోడల్",
+        metric_roles_val: "4 పాత్రలు",
+        metric_roles_lbl: "నిర్దిష్ట కార్యాచరణ",
+        metric_channels_val: "IVR / SMS",
+        metric_channels_lbl: "ఆఫ్‌లైన్ వాయిస్ ప్రసారం"
       },
-      "dashboard": {
-        "title": "లైవ్ స్థితి",
-        "your_location": "మీ స్థానం",
-        "subscribe_title": "SMS/వాయిస్ అలర్ట్‌లు పొందండి",
-        "phone_placeholder": "ఫోన్ నంబర్",
-        "consent": "అత్యవసర హెచ్చరికల కోసం ఆటోమేటెడ్ SMS మరియు వాయిస్ కాల్‌లను స్వీకరించడానికి నేను అంగీకరిస్తున్నాను.",
-        "subscribe_btn": "సబ్‌స్క్రైబ్ చేయండి",
-        "success": "విజయవంతంగా సబ్‌స్క్రైబ్ చేయబడింది!",
-        "error": "సబ్‌స్క్రిప్షన్ విఫలమైంది. దయచేసి సమ్మతి మరియు నంబర్‌ను తనిఖీ చేయండి.",
-        "distance": "కిమీ దూరంలో",
-        "score": "రిస్క్ స్కోర్",
-        "confidence": "నమ్మకం",
-        "advisory_resident": "నివాసి హెచ్చరిక",
-        "advisory_officer": "అధికారి సమాచారం",
-        "advisory_worker": "కార్మికుని పని",
-        "advisory_volunteer": "వాలంటీర్ పని"
+      dashboard: {
+        title: "లైవ్ కమాండ్ స్థితి",
+        subtitle: "రియల్-టైమ్ టెలిమెట్రీ మరియు ప్రాంతీయ హెచ్చరికలు",
+        your_location: "మీ ప్రస్తుత స్థానం",
+        live_feed: "లైవ్ డేటా అనుసంధానించబడింది",
+        connecting: "సిస్టమ్‌కి కనెక్ట్ అవుతోంది...",
+        subscribe_title: "అత్యవసర హెచ్చరికల నమోదు",
+        subscribe_desc: "ఆటోమేటెడ్ SMS మరియు ప్రాంతీయ హెచ్చరికలను స్వీకరించడానికి మీ పరికరాన్ని నమోదు చేయండి.",
+        consent: "అత్యవసర SMS మరియు వాయిస్ కాల్స్ అందుకోవడానికి నేను అంగీకరిస్తున్నాను.",
+        subscribe_btn: "హెచ్చరికల కోసం నమోదు చేయండి",
+        success: "విజయవంతంగా నమోదు చేయబడింది!",
+        error: "నమోదు విఫలమైంది. దయచేసి అంగీకారాన్ని తనిఖీ చేయండి.",
+        ndma_feed: "NDMA / అధికారిక అలర్ట్ ఫీడ్",
+        no_alerts: "ఈ ప్రాంతానికి ఎటువంటి అధికారిక హెచ్చరికలు లేవు.",
+        sensor_readings: "క్రియాశీల టెలిమెట్రీ స్టేషన్లు",
+        score: "ప్రమాద స్కోరు",
+        confidence: "ఖచ్చితత్వం"
+      },
+      how_it_works: {
+        title: "కార్యాచరణ విధానం",
+        subtitle: "సెన్సార్ సేకరణ నుండి అత్యవసర హెచ్చరిక ప్రసారం వరకు సమగ్ర ప్రక్రియ.",
+        step_prefix: "దశ 0",
+        steps: [
+          { title: "సెన్సింగ్ వ్యవస్థ", desc: "అల్ట్రాసోనిక్ సెన్సార్లు నీటి మట్టం మరియు ప్రవాహ అడ్డంకులను నిరంతరం నివేదిస్తాయి." },
+          { title: "వాతావరణ సమాచార సేకరణ", desc: "ERA5 వర్షపాత డేటాను MQTT ద్వారా సెన్సార్ సమాచారంతో అనుసంధానిస్తారు." },
+          { title: "ప్రమాద తీవ్రత అంచనా", desc: "భౌగోళిక వాలుల ఆధారంగా అల్గారిథమ్ రిస్క్ స్కోర్‌ను గణిస్తుంది." },
+          { title: "హెచ్చరిక వర్గీకరణ", desc: "డేటాను సాధారణ, పర్యవేక్షణ, హెచ్చరిక మరియు తరలింపు దశలుగా వర్గీకరిస్తారు." },
+          { title: "బహుభాషా AI సలహా", desc: "అధికారులు మరియు పౌరుల కోసం వారి స్థానిక భాషలో మార్గదర్శకాలు సిద్ధమవుతాయి." },
+          { title: "తక్షణ ప్రసారం", desc: "IVR వాయిస్ కాల్స్, SMS మరియు లైవ్ మ్యాప్ ద్వారా క్షణాల్లో సమాచారం చేరుతుంది." }
+        ]
       }
     }
   }
@@ -107,7 +185,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: "en", // default language
+    lng: "en",
     fallbackLng: "en",
     interpolation: {
       escapeValue: false
