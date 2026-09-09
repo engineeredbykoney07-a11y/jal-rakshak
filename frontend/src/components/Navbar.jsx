@@ -19,7 +19,9 @@ const Navbar = () => {
   return (
     <nav className="nav">
       <div className="nav-logo">
-        <Link to="/">Jal Rakshak</Link>
+        <Link to="/">
+          <span className="logo-badge">✦</span> Jal Rakshak
+        </Link>
       </div>
       <div className="nav-links">
         {navLinks.map((link) => (
@@ -35,6 +37,7 @@ const Navbar = () => {
           className="lang-switch" 
           onChange={changeLanguage} 
           value={i18n.language}
+          aria-label="Select Language"
         >
           <option value="en">English</option>
           <option value="hi">हिन्दी (Hindi)</option>

@@ -16,18 +16,24 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div style={{ padding: '4rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>{t('nav.how_it_works')}</h2>
-      <div className="steps">
+    <main style={{ padding: '4rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{t('nav.how_it_works')}</h2>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>
+          Discover the end-to-end process of our AI-driven early warning system.
+        </p>
+      </div>
+
+      <div className="steps-grid">
         {steps.map((step, idx) => (
           <div key={idx} className="step-card">
-            <div className="step-num">{idx + 1}</div>
-            <h3 style={{ marginBottom: '1rem', color: 'var(--teal-light)' }}>{step.title}</h3>
+            <div className="step-num">0{idx + 1}</div>
+            <h3>{step.title}</h3>
             <p>{step.desc}</p>
           </div>
         ))}
       </div>
-    </div>
+    </main>
   );
 };
 
