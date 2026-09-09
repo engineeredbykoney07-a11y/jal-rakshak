@@ -5,7 +5,7 @@ const languageNames = { hi: 'Hindi', te: 'Telugu', en: 'English' };
 
 async function generateAdvisory(risk, location) {
   const langName = languageNames[location.lang] || 'English';
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
   const prompt = `Risk score: ${risk.score}, Tier: ${risk.tier}, Confidence: ${risk.confidence}, Location: ${location.name}.
 

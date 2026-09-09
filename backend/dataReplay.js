@@ -5,7 +5,7 @@ const mqtt = require('mqtt');
 const { mapEra5Row } = require('./utils/riskScore');
 
 const CSV_PATH = path.join(__dirname, '..', 'data', 'era5-imerg', 'labeled_cloudburst.csv');
-const INTERVAL_MS = parseInt(process.env.REPLAY_INTERVAL_MS || '2000', 10);
+const INTERVAL_MS = parseInt(process.env.REPLAY_INTERVAL_MS || '15000', 10);
 const BROKER = process.env.MQTT_BROKER || 'mqtt://test.mosquitto.org';
 const TOPIC = 'jalrakshak/sensors';
 

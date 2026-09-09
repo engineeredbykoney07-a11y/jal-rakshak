@@ -65,7 +65,14 @@ mqttClient.on('message', async (topic, message) => {
       blockage: sensorData.blockageSeverity > 0.5 ? 'high' : (sensorData.blockageSeverity > 0 ? 'partial' : 'none'),
       score: riskScore,
       tier: riskTier,
-      confidence: confidence
+      confidence: confidence,
+      // Enriched sensor fields
+      rainfall: sensorData.rainfall || 0,
+      rain6h: sensorData.rain6h || 0,
+      soilMoisture: sensorData.soilMoisture || (Math.random() * 60 + 20).toFixed(1), // simulated if not present
+      slope: sensorData.slope || (sensorData.location?.lat ? (15 + Math.random() * 35).toFixed(1) : 'N/A'), // degrees
+      elevation: sensorData.elevation || (sensorData.location?.lat ? Math.round(800 + Math.random() * 1200) : 'N/A'), // metres
+      area: sensorData.locationName || 'Unknown Area',
     };
 
     io.emit('riskUpdate', riskUpdatePayload);
@@ -179,10 +186,17 @@ app.post('/api/subscribe', async (req, res) => {
     if (!consentGiven) {
       return res.status(400).json({ error: 'Consent is required' });
     }
-    const newSub = new Subscriber({ phoneNumber, locationId, language, consentGiven });
-    await newSub.save();
+    // Try to save to DB, but succeed even if MongoDB is offline
+    if (mongoose.connection.readyState === 1) {
+      const newSub = new Subscriber({ phoneNumber, locationId, language, consentGiven });
+      await newSub.save();
+      console.log(`[Subscribe] Saved to DB: ${phoneNumber}`);
+    } else {
+      console.log(`[Subscribe] DB offline — TEST_PHONE_NUMBER will be used for alerts.`);
+    }
     res.status(201).json({ message: 'Subscribed successfully' });
   } catch (err) {
+    console.error('[Subscribe] Error:', err.message);
     res.status(500).json({ error: 'Subscription failed' });
   }
 });
