@@ -626,3 +626,211 @@ body {
   .hero-gov, .dashboard-layout, .timeline-row { grid-template-columns: 1fr; }
   .gov-footer { flex-direction: column; gap: 1rem; text-align: center; }
 }
+.official-alert-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.official-alert-meta {
+  font-size: 0.75rem;
+  color: rgba(160, 176, 186, 0.7);
+  display: flex;
+  justify-content: space-between;
+}
+
+.empty-state {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  font-style: italic;
+}
+
+/* Map Popup Enhancements */
+.popup-analytics {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-size: 0.85rem;
+}
+
+.popup-analytics .stat {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.popup-analytics .stat-label {
+  color: #666;
+}
+
+.popup-analytics .stat-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* About Page Image Animation */
+.about-image-container {
+  width: 100%;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.about-hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  animation: floatImage 6s ease-in-out infinite;
+  transition: transform 0.5s ease;
+}
+
+.about-hero-image:hover {
+  transform: scale(1.05);
+}
+
+@keyframes floatImage {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* ================================
+   Safe Zones & Escape Routes Page
+   ================================ */
+
+.safe-zones-page h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.safe-zones-page h2::before {
+  content: '🛡️';
+  font-size: 1.5rem;
+}
+
+.instructions-card ul {
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+
+.instructions-card ul li {
+  margin-bottom: 0.25rem;
+}
+
+.shelter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.9rem;
+  transition: background 0.2s;
+}
+
+.shelter-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.shelter-item:hover {
+  background: rgba(58, 165, 147, 0.05);
+  border-radius: 4px;
+  padding-left: 0.4rem;
+}
+
+.shelter-info strong {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.shelter-type {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.shelter-distance {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--teal-light);
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.officials-directory .official-alert-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Sensor Strip */
+.sensor-strip {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.sensor-strip-card {
+  flex: 1;
+  min-width: 280px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--slate);
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+
+.sensor-strip-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.sensor-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .sensor-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sensor-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sensor-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sensor-val {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+}

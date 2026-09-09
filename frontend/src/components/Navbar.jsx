@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, LayoutDashboard, GitMerge } from 'lucide-react';
+import { Home, LayoutDashboard, ShieldAlert } from 'lucide-react';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -14,7 +14,7 @@ const Navbar = () => {
   const navLinks = [
     { path: '/', label: t('nav.home'), icon: <Home size={18} /> },
     { path: '/dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
-    { path: '/how-it-works', label: t('nav.how_it_works'), icon: <GitMerge size={18} /> },
+    { path: '/safe-zones', label: 'Safe Zones', icon: <ShieldAlert size={18} /> },
   ];
 
   return (

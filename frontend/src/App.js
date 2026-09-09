@@ -4,7 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import HowItWorks from './pages/HowItWorks';
+import SafeZones from './pages/SafeZones';
+import './i18n';
+import './index.css';
 
 function App() {
   return (
@@ -15,7 +17,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/safe-zones" element={<SafeZones />} />
           </Routes>
         </div>
         <footer className="gov-footer">
