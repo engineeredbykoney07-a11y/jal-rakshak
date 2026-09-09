@@ -2,32 +2,35 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 const mqtt = require('mqtt');
-const http = require('http'); // New: required for Socket.io
-const { Server } = require('socket.io'); // New: Socket.io server
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
-// Create the HTTP server and attach Socket.io with permissive CORS for local dev
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
 app.use(express.json());
 const SensorReading = require('./models/SensorReading');
+const FloodEvent = require('./models/FloodEvent');
+const Subscriber = require('./models/Subscriber');
+const { calculateRiskScore } = require('./utils/riskScore');
+const { generateAdvisory } = require('./advisory');
+const { sendSMS, maskPhone } = require('./sms');
+const { sendIVR } = require('./ivr');
+const { fetchCapFeed } = require('./sachetFeed');
 
-// Connect to MongoDB
 async function connectDB() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected (Jal Rakshak DB)');
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
+    console.error('MongoDB connection error (Starting in DB-less mode):', err.message);
   }
 }
 
-// Connect to Mosquitto Broker
-const mqttClient = mqtt.connect('mqtt://test.mosquitto.org');
+const mqttClient = mqtt.connect(process.env.MQTT_BROKER || 'mqtt://test.mosquitto.org');
 
 mqttClient.on('connect', () => {
   console.log('Connected to Mosquitto MQTT broker');
@@ -36,77 +39,203 @@ mqttClient.on('connect', () => {
   });
 });
 
-// Socket.io Connection Log
 io.on('connection', (socket) => {
   console.log(`New frontend client connected: ${socket.id}`);
 });
 
-// Ingestion & Risk Scoring
 mqttClient.on('message', async (topic, message) => {
   try {
     const sensorData = JSON.parse(message.toString());
+    const { riskScore, riskTier, confidence } = calculateRiskScore(sensorData);
 
-    // Weights: W1=0.4 (Rainfall), W2=0.4 (Water Level), W3=0.2 (Blockage)
-    const w1 = 0.4, w2 = 0.4, w3 = 0.2;
-    const normRain = Math.min((sensorData.rainfall / 50) * 100, 100);
-    const normWater = Math.min((sensorData.waterLevel / 100) * 100, 100);
-    const normBlockage = sensorData.blockageSeverity * 100;
-
-    const riskScore = Number(((w1 * normRain) + (w2 * normWater) + (w3 * normBlockage)).toFixed(2));
-
-    let riskTier = 'Low';
-    if (riskScore > 75) riskTier = 'Critical';
-    else if (riskScore > 50) riskTier = 'Warning';
-
-    console.log(`\n--- [Jal Rakshak] New Reading ---`);
+    console.log('\n--- [Jal Rakshak] New Reading ---');
+    console.log(`Source: ${sensorData.source || 'unknown'}`);
+    console.log(`Rainfall: ${sensorData.rainfall?.toFixed?.(4) ?? sensorData.rainfall} mm | 6h: ${sensorData.rain6h?.toFixed?.(4) ?? sensorData.rain6h} mm`);
+    console.log(`Cloudburst label: ${sensorData.cloudburstLabel ?? 0}`);
     console.log(`Calculated Risk Score: ${riskScore} / 100`);
-    console.log(`Current Risk Tier: ${riskTier}`);
+    console.log(`Current Risk Tier: ${riskTier} (${confidence} Confidence)`);
+
+    // Build the exact data contract
+    const riskUpdatePayload = {
+      id: sensorData.nodeId || 'unknown',
+      name: sensorData.locationName || 'Unknown Location',
+      lang: sensorData.lang || 'en',
+      coords: [sensorData.location?.lat || 0, sensorData.location?.lng || 0],
+      level: sensorData.waterLevel || 0,
+      blockage: sensorData.blockageSeverity > 0.5 ? 'high' : (sensorData.blockageSeverity > 0 ? 'partial' : 'none'),
+      score: riskScore,
+      tier: riskTier,
+      confidence: confidence
+    };
+
+    io.emit('riskUpdate', riskUpdatePayload);
 
     const reading = new SensorReading({
       nodeId: sensorData.nodeId,
+      timestamp: sensorData.timestamp ? new Date(sensorData.timestamp) : new Date(),
+      temperature: sensorData.temperature,
+      windU: sensorData.windU,
+      windV: sensorData.windV,
+      windSpeed: sensorData.windSpeed,
+      surfacePressure: sensorData.surfacePressure,
+      waterVapour: sensorData.waterVapour,
+      totalPrecipitation: sensorData.totalPrecipitation,
       waterLevel: sensorData.waterLevel,
       blockageSeverity: sensorData.blockageSeverity,
       rainfall: sensorData.rainfall,
-      riskScore: riskScore,
-      riskTier: riskTier,
+      rain3h: sensorData.rain3h,
+      rain6h: sensorData.rain6h,
+      rainPeak3h: sensorData.rainPeak3h,
+      cloudburstLabel: sensorData.cloudburstLabel,
+      source: sensorData.source || 'era5-imerg',
+      riskScore,
+      riskTier,
+      confidence,
       location: sensorData.location,
     });
 
-    const saved = await reading.save();
-    console.log('Saved to Jal Rakshak DB:', saved._id);
-    
-    // LIVE UPDATE: Push this new reading to the React dashboard instantly!
-    io.emit('new-reading', saved);
+    try {
+      if (mongoose.connection.readyState === 1) {
+        const saved = await reading.save();
+        console.log('Saved to Jal Rakshak DB:', saved._id);
+      }
+    } catch(dbErr) {
+      console.log('Skipping DB save (MongoDB offline)');
+    }
 
-    console.log(`---------------------------------\n`);
+    if (riskTier === 'Warning' || riskTier === 'Evacuate') {
+      console.log(`\n>>> TRIGGERING DISPATCH FOR ${riskTier} <<<`);
+
+      // Step 1: Generate advisory (independently, so failure doesn't block SMS)
+      let advisory = null;
+      try {
+        advisory = await generateAdvisory(riskUpdatePayload, { name: riskUpdatePayload.name, lang: riskUpdatePayload.lang });
+        console.log('[Advisory] Generated successfully.');
+        io.emit('advisoryUpdate', { id: riskUpdatePayload.id, advisory });
+      } catch (advisoryErr) {
+        console.error('[Advisory] Failed to generate (check GEMINI_API_KEY in .env):', advisoryErr.message);
+        // Fallback advisory in English so SMS still goes out
+        advisory = {
+          resident: `Flood risk alert for ${riskUpdatePayload.name}. Risk tier: ${riskTier}. Please take precautions immediately.`,
+          officer: `Risk tier ${riskTier} detected at ${riskUpdatePayload.name}. Score: ${riskUpdatePayload.score}/100. Coordinate response.`,
+          worker: `Proceed to ${riskUpdatePayload.name} for emergency assessment. Tier: ${riskTier}.`,
+          volunteer: `Check on residents near ${riskUpdatePayload.name} who may not have phones. Tier: ${riskTier}.`
+        };
+        io.emit('advisoryUpdate', { id: riskUpdatePayload.id, advisory });
+      }
+
+      // Step 2: Fetch subscribers and send alerts
+      let subscribers = [];
+      try {
+        subscribers = await Subscriber.find({ locationId: riskUpdatePayload.id });
+      } catch (dbErr) {
+        console.log('[SMS] MongoDB offline, using TEST_PHONE_NUMBER only.');
+      }
+
+      // Add test phone from env as fallback demo
+      if (process.env.TEST_PHONE_NUMBER) {
+        subscribers.push({
+          phoneNumber: process.env.TEST_PHONE_NUMBER,
+          language: riskUpdatePayload.lang,
+          locationId: riskUpdatePayload.id
+        });
+      }
+
+      if (subscribers.length === 0) {
+        console.log('[SMS] No subscribers found. Set TEST_PHONE_NUMBER in .env to test.');
+      }
+
+      for (const sub of subscribers) {
+        console.log(`[SMS] Dispatching to ${maskPhone(sub.phoneNumber)} in ${sub.language}...`);
+        // Fire both in parallel without awaiting (non-blocking)
+        sendSMS(advisory.resident, riskUpdatePayload.name, sub.phoneNumber);
+        sendIVR(advisory.resident, sub.language, sub.phoneNumber);
+      }
+    }
+
+    console.log('---------------------------------\n');
   } catch (err) {
     console.error('Error processing MQTT message:', err.message);
   }
 });
 
-// --- REST APIs for the Dashboard ---
-
-// 1. Health check route
 app.get('/', (req, res) => {
-  res.send('Jal Rakshak backend is running');
+  res.send('Jal Rakshak backend is running (ERA5/IMERG + Uttarakhand flood history datasets)');
 });
 
-// 2. Fetch recent readings for map initialization
 app.get('/api/readings', async (req, res) => {
   try {
-    // Fetch the 50 most recent readings to populate the dashboard map
-    const readings = await SensorReading.find().sort({ createdAt: -1 }).limit(50);
+    const limit = parseInt(req.query.limit || '50', 10);
+    const readings = await SensorReading.find().sort({ timestamp: -1 }).limit(limit);
     res.json(readings);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch readings' });
   }
 });
 
+app.post('/api/subscribe', async (req, res) => {
+  try {
+    const { phoneNumber, locationId, language, consentGiven } = req.body;
+    if (!consentGiven) {
+      return res.status(400).json({ error: 'Consent is required' });
+    }
+    const newSub = new Subscriber({ phoneNumber, locationId, language, consentGiven });
+    await newSub.save();
+    res.status(201).json({ message: 'Subscribed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Subscription failed' });
+  }
+});
+
+app.get('/api/official-alerts', async (req, res) => {
+  try {
+    const stateCode = req.query.state || 'uttarakhand';
+    const alerts = await fetchCapFeed(stateCode);
+    res.json(alerts);
+  } catch (err) {
+    console.error('Error fetching official alerts:', err);
+    res.status(500).json({ error: 'Failed to fetch alerts' });
+  }
+});
+
+app.get('/api/flood-history', async (req, res) => {
+  try {
+    const events = await FloodEvent.find().sort({ serialNo: 1 });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch flood history' });
+  }
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const [totalReadings, cloudburstCount, floodEvents, criticalCount] = await Promise.all([
+      SensorReading.countDocuments(),
+      SensorReading.countDocuments({ cloudburstLabel: 1 }),
+      FloodEvent.countDocuments(),
+      SensorReading.countDocuments({ riskTier: 'Evacuate' }),
+    ]);
+
+    res.json({
+      totalReadings,
+      cloudburstEvents: cloudburstCount,
+      historicalFloodEvents: floodEvents,
+      criticalReadings: criticalCount,
+      datasets: {
+        era5Immerg: 'labeled_cloudburst.csv (2005–2024, hourly)',
+        floodHistory: 'Uttarakhand_floods_1970_2025.csv (252 events)',
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
-// IMPORTANT: Start the `server`, not the `app`, so Socket.io binds correctly
 connectDB().then(() => {
   server.listen(PORT, () => {
     console.log(`Jal Rakshak Server (API + WebSockets) running on http://localhost:${PORT}`);
+    console.log('Datasets: ERA5/IMERG cloudburst + Uttarakhand flood history (1970–2025)');
   });
 });

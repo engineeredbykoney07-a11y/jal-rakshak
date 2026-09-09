@@ -3,3 +3,9 @@ node_modules/
 frontend/node_modules/
 backend/node_modules/
 .DS_Store
+
+# Large Kaggle datasets (run npm run download-data in backend/)
+data/era5-imerg/*.csv
+data/era5-imerg/*.zip
+data/flood-history/*.csv
+data/flood-history/*.zip

@@ -4,6 +4,10 @@
   "description": "Jal Rakshak - AI-Powered Flash Flood Prediction Backend",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "replay": "node dataReplay.js",
+    "seed": "node seedFloods.js",
+    "download-data": "node scripts/downloadData.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,11 +18,14 @@
     "@anthropic-ai/sdk": "^0.124.0",
     "axios": "^1.20.0",
     "cors": "^2.8.6",
+    "csv-parser": "^3.2.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.9.5",
     "mqtt": "^5.15.2",
+    "rss-parser": "^3.13.0",
     "socket.io": "^4.8.3",
-    "twilio": "^6.1.0"
+    "twilio": "^6.1.0",
+    "xmlbuilder2": "^4.0.3"
   }
 }
