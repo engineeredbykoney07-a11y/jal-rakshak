@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ArrowRight, Activity, Zap, CheckCircle2, AlertOctagon } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ArrowRight, Activity, Zap, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 const Home = () => {
   const { t } = useTranslation();
