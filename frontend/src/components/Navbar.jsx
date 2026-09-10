@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, LayoutDashboard, ShieldAlert, Cpu } from 'lucide-react';
+import { Home, LayoutDashboard, ShieldAlert, Cpu, Globe2 } from 'lucide-react';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -22,10 +22,11 @@ const Navbar = () => {
     <nav className="nav">
       <div className="nav-logo">
         <Link to="/">
-          <img src="/logo.png" alt="Jal Rakshak Logo" />
+          <img src="/logo.png" alt="Jal Rakshak Emblem" />
           <span>Jal Rakshak</span>
         </Link>
       </div>
+
       <div className="nav-links">
         {navLinks.map((link) => (
           <Link
@@ -37,16 +38,20 @@ const Navbar = () => {
             <span>{link.label}</span>
           </Link>
         ))}
-        <select 
-          className="lang-switch" 
-          onChange={changeLanguage} 
-          value={i18n.language}
-          aria-label="Language Selector"
-        >
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
-          <option value="te">తెలుగు</option>
-        </select>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.5rem' }}>
+          <Globe2 size={16} color="#64748b" />
+          <select 
+            className="lang-switch" 
+            onChange={changeLanguage} 
+            value={i18n.language}
+            aria-label="Language Selector"
+          >
+            <option value="en">English (EN)</option>
+            <option value="hi">हिन्दी (HI)</option>
+            <option value="te">తెలుగు (TE)</option>
+          </select>
+        </div>
       </div>
     </nav>
   );
