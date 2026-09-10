@@ -5,7 +5,7 @@ const client = mqtt.connect(process.env.MQTT_BROKER || 'mqtt://test.mosquitto.or
 
 const locations = [
   { nodeId: 'ridgeroad', locationName: 'Ridge Road, Uttarkashi', lang: 'hi', location: { lat: 30.73, lng: 78.45 } },
-  { nodeId: 'secunderabad', locationName: 'Secunderabad', lang: 'te', location: { lat: 17.4399, lng: 78.4983 } }
+  { nodeId: 'joshimath', locationName: 'Joshimath, Chamoli', lang: 'hi', location: { lat: 30.55, lng: 79.56 } }
 ];
 
 client.on('connect', () => {

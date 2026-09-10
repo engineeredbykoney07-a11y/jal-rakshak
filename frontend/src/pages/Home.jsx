@@ -131,6 +131,50 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Hardware & Sensor Network Section */}
+      <section className="hardware-section" style={{ padding: '4.5rem 2rem', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2.2rem', color: '#0f172a', marginBottom: '1rem', textAlign: 'center', fontWeight: 800 }}>
+            Monsoon Sentinel: Hardware Telemetry
+          </h2>
+          <p style={{ color: '#475569', fontSize: '1.1rem', textAlign: 'center', maxWidth: '750px', margin: '0 auto 3.5rem auto', lineHeight: '1.6' }}>
+            Our autonomous solar-powered nodes are deployed along critical river basins and urban catchments. 
+            They provide continuous real-time data ingestion for early flash flood detection.
+          </p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4rem', alignItems: 'center' }}>
+            <div className="hardware-details" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+              <div className="sensor-feature">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.3rem', color: '#0369a1', marginBottom: '0.6rem' }}>
+                  <Zap size={22} strokeWidth={2.5} /> High-Precision Rainfall Gauges
+                </h3>
+                <p style={{ color: '#334155', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                  Acoustic and tipping-bucket rain gauges measure instantaneous precipitation intensity and cumulative 6-hour rainfall (mm). Critical for identifying localized cloudburst events before they escalate.
+                </p>
+              </div>
+
+              <div className="sensor-feature">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.3rem', color: '#0369a1', marginBottom: '0.6rem' }}>
+                  <Activity size={22} strokeWidth={2.5} /> Ultrasonic Water Level Sensors
+                </h3>
+                <p style={{ color: '#334155', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                  Non-contact ultrasonic transceivers continuously monitor river stage and storm drain capacity. Rapid spikes trigger immediate localized evacuation protocols.
+                </p>
+              </div>
+
+              <div className="sensor-feature">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.3rem', color: '#0369a1', marginBottom: '0.6rem' }}>
+                  <ShieldAlert size={22} strokeWidth={2.5} /> Blockage & Soil Saturation
+                </h3>
+                <p style={{ color: '#334155', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                  Deep-soil saturation probes predict landslide risks on steep slopes, while optical blockage sensors detect dangerous debris buildup in critical urban drainage chokepoints.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 };

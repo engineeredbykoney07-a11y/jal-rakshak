@@ -350,26 +350,101 @@ body {
   box-shadow: 0 8px 24px rgba(9, 30, 66, 0.06);
 }
 
-.map-floating-legend {
+.map-legend-detailed {
   position: absolute;
   bottom: 20px;
   left: 20px;
   z-index: 500;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  padding: 0.65rem 1.1rem;
-  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
   border: 1.5px solid var(--gov-border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   display: flex;
-  gap: 1rem;
-  align-items: center;
-  font-size: 0.78rem;
-  font-weight: 700;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 250px;
 }
 
-.legend-item { display: flex; align-items: center; gap: 0.4rem; }
-.legend-badge { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.map-helpline-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 500;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1.5px solid #fecaca;
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 220px;
+}
+
+.helpline-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #0f172a;
+}
+.helpline-row strong { font-weight: 700; color: #475569; }
+.helpline-row span { font-weight: 800; color: #dc2626; }
+
+.map-locations-panel {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 500;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--gov-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 220px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.legend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.legend-text strong {
+  font-size: 0.85rem;
+  color: #0f172a;
+  margin-bottom: 0.15rem;
+}
+
+.legend-desc {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.legend-badge { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; margin-top: 2px; }
 .badge-normal { background: var(--tier-normal); box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
 .badge-watch { background: var(--tier-watch); box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
 .badge-warning { background: var(--tier-warning); box-shadow: 0 0 8px rgba(249, 115, 22, 0.6); }
@@ -824,13 +899,258 @@ body {
   font-size: 0.72rem;
   color: var(--text-secondary);
   text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.official-alert-meta {
+  font-size: 0.75rem;
+  color: rgba(160, 176, 186, 0.7);
+  display: flex;
+  justify-content: space-between;
+}
+
+.empty-state {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  font-style: italic;
+}
+
+/* Map Popup Enhancements */
+.popup-analytics {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-size: 0.85rem;
+}
+
+.popup-analytics .stat {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.popup-analytics .stat-label {
+  color: #666;
+}
+
+.popup-analytics .stat-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* About Page Image Animation */
+.about-image-container {
+  width: 100%;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.about-hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  animation: floatImage 6s ease-in-out infinite;
+  transition: transform 0.5s ease;
+}
+
+.about-hero-image:hover {
+  transform: scale(1.05);
+}
+
+@keyframes floatImage {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* ================================
+   Safe Zones & Escape Routes Page
+   ================================ */
+
+.safe-zones-header {
+  margin-bottom: 2.5rem;
+}
+
+.safe-zones-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--gov-navy);
+  margin-bottom: 0.5rem;
+}
+
+.safe-zones-header p {
+  color: #475569;
+  font-size: 1.1rem;
+}
+
+.map-container {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px -8px rgba(0, 102, 204, 0.15);
+  border: 2px solid #e2e8f0;
+}
+
+.shelter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid var(--gov-border-subtle);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.shelter-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.shelter-item:hover {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+}
+
+.shelter-info strong {
+  display: block;
+  font-weight: 700;
+  color: var(--gov-navy);
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.shelter-type {
+  font-size: 0.75rem;
+  color: #0369a1;
+  background: #e0f2fe;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shelter-distance {
+  font-family: var(--mono-font);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gov-blue);
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.officials-directory .official-alert-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Sensor Strip */
+.sensor-strip {
+  display: flex;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.sensor-strip-card {
+  flex: 1;
+  min-width: 300px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--gov-border-subtle);
+  border-top: 4px solid var(--gov-border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sensor-strip-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(9, 30, 66, 0.1);
+}
+
+.tier-normal { border-top-color: #10b981; }
+.tier-normal .tier-badge { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+
+.tier-watch { border-top-color: #f59e0b; }
+.tier-watch .tier-badge { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+
+.tier-warning { border-top-color: #f97316; }
+.tier-warning .tier-badge { background: #ffedd5; color: #9a3412; border: 1px solid #f97316; }
+
+.tier-evacuate { border-top-color: #ef4444; }
+.tier-evacuate .tier-badge { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+
+.sensor-strip-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--sans-font);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gov-navy);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1.5px solid var(--gov-border-subtle);
+}
+
+.tier-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .sensor-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sensor-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sensor-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .sensor-val {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
+  font-family: var(--mono-font);
+  font-size: 1.1rem;
+  color: var(--gov-navy);
+  font-weight: 700;
 }

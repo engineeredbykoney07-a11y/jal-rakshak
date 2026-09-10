@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Home, LayoutDashboard, ShieldAlert, Cpu } from 'lucide-react';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -15,6 +15,7 @@ const Navbar = () => {
     { path: '/', label: t('nav.home'), icon: <Home size={18} /> },
     { path: '/dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
     { path: '/safe-zones', label: 'Safe Zones', icon: <ShieldAlert size={18} /> },
+    { path: '/simulation', label: 'Simulation', icon: <Cpu size={18} /> },
   ];
 
   return (

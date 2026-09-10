@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import SafeZones from './pages/SafeZones';
+import Simulation from './pages/Simulation';
 import './i18n';
 import './index.css';
 
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/safe-zones" element={<SafeZones />} />
+            <Route path="/simulation" element={<Simulation />} />
           </Routes>
         </div>
         <footer className="gov-footer">

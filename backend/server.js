@@ -5,12 +5,15 @@ const mqtt = require('mqtt');
 const http = require('http');
 const { Server } = require('socket.io');
 
+const cors = require('cors');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 const SensorReading = require('./models/SensorReading');
 const FloodEvent = require('./models/FloodEvent');
@@ -18,7 +21,7 @@ const Subscriber = require('./models/Subscriber');
 const { calculateRiskScore } = require('./utils/riskScore');
 const { generateAdvisory } = require('./advisory');
 const { sendSMS, maskPhone } = require('./sms');
-const { sendIVR } = require('./ivr');
+const { sendIVR, sendTestCall } = require('./ivr');
 const { fetchCapFeed } = require('./sachetFeed');
 
 async function connectDB() {
@@ -73,6 +76,8 @@ mqttClient.on('message', async (topic, message) => {
       slope: sensorData.slope || (sensorData.location?.lat ? (15 + Math.random() * 35).toFixed(1) : 'N/A'), // degrees
       elevation: sensorData.elevation || (sensorData.location?.lat ? Math.round(800 + Math.random() * 1200) : 'N/A'), // metres
       area: sensorData.locationName || 'Unknown Area',
+      source: sensorData.source || 'era5-imerg',
+      timestamp: sensorData.timestamp || new Date().toISOString()
     };
 
     io.emit('riskUpdate', riskUpdatePayload);
@@ -123,7 +128,7 @@ mqttClient.on('message', async (topic, message) => {
         console.error('[Advisory] Failed to generate (check GEMINI_API_KEY in .env):', advisoryErr.message);
         // Fallback advisory in English so SMS still goes out
         advisory = {
-          resident: `Flood risk alert for ${riskUpdatePayload.name}. Risk tier: ${riskTier}. Please take precautions immediately.`,
+          resident: `THERE IS DANGER COMING TO YOU!..PLEASE GO SOMEHWERE SAFE`,
           officer: `Risk tier ${riskTier} detected at ${riskUpdatePayload.name}. Score: ${riskUpdatePayload.score}/100. Coordinate response.`,
           worker: `Proceed to ${riskUpdatePayload.name} for emergency assessment. Tier: ${riskTier}.`,
           volunteer: `Check on residents near ${riskUpdatePayload.name} who may not have phones. Tier: ${riskTier}.`
@@ -156,7 +161,7 @@ mqttClient.on('message', async (topic, message) => {
         console.log(`[SMS] Dispatching to ${maskPhone(sub.phoneNumber)} in ${sub.language}...`);
         // Fire both in parallel without awaiting (non-blocking)
         sendSMS(advisory.resident, riskUpdatePayload.name, sub.phoneNumber);
-        sendIVR(advisory.resident, sub.language, sub.phoneNumber);
+        sendIVR(advisory.resident, sub.language, sub.phoneNumber, riskUpdatePayload.name, riskTier);
       }
     }
 
@@ -168,6 +173,43 @@ mqttClient.on('message', async (topic, message) => {
 
 app.get('/', (req, res) => {
   res.send('Jal Rakshak backend is running (ERA5/IMERG + Uttarakhand flood history datasets)');
+});
+
+// IVR keypad response handler (Twilio posts here after press-1/press-2)
+app.post('/api/ivr-response', (req, res) => {
+  const digit = req.body.Digits;
+  const twiml = new (require('twilio').twiml.VoiceResponse)();
+  if (digit === '1') {
+    twiml.say({ language: 'en-IN', voice: 'Polly.Raveena' },
+      'Thank you for confirming. Please move to higher ground immediately and stay safe. Jal Rakshak will continue to monitor conditions.');
+  } else if (digit === '2') {
+    twiml.say({ language: 'en-IN', voice: 'Polly.Raveena' },
+      'Emergency assistance has been noted. Please stay where you are. Rescue teams have been alerted to your location. Call 1 0 7 8 for immediate help.');
+  } else {
+    twiml.say({ language: 'en-IN', voice: 'Polly.Raveena' },
+      'Invalid response. Please call 1 0 7 8 for the National Disaster helpline.');
+  }
+  res.type('text/xml');
+  res.send(twiml.toString());
+});
+
+// Test call endpoint — fires a real call to TEST_PHONE_NUMBER
+app.post('/api/test-call', async (req, res) => {
+  const phone = req.body.phone || process.env.TEST_PHONE_NUMBER;
+  if (!phone) return res.status(400).json({ error: 'No phone number. Set TEST_PHONE_NUMBER in .env or pass phone in body.' });
+  try {
+    const sid = await sendTestCall(phone);
+    res.json({ success: true, sid, to: phone.slice(-4).padStart(phone.length, '*') });
+  } catch (err) {
+    // If Twilio trial restriction, explain clearly
+    const isTrial = err.message?.includes('unverified') || err.message?.includes('trial');
+    res.status(500).json({
+      error: err.message,
+      hint: isTrial
+        ? 'Twilio trial accounts can only call verified numbers. Go to twilio.com/console > Phone Numbers > Verified Caller IDs and add your number.'
+        : 'Check your Twilio credentials in .env'
+    });
+  }
 });
 
 app.get('/api/readings', async (req, res) => {
@@ -205,7 +247,36 @@ app.get('/api/official-alerts', async (req, res) => {
   try {
     const stateCode = req.query.state || 'uttarakhand';
     const alerts = await fetchCapFeed(stateCode);
-    res.json(alerts);
+
+    // Translate Hindi alerts to English using Gemini
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+    const translatedAlerts = await Promise.all(alerts.slice(0, 10).map(async (alert) => {
+      try {
+        const textToTranslate = alert.contentSnippet || alert.title || '';
+        const titleToTranslate = alert.title || '';
+
+        // Check if text contains Hindi/Devanagari characters
+        const hasHindi = /[\u0900-\u097F]/.test(textToTranslate + titleToTranslate);
+        if (!hasHindi) {
+          return { ...alert, titleEn: titleToTranslate, contentSnippetEn: textToTranslate };
+        }
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+        const result = await model.generateContent(
+          `Translate the following Indian government weather/disaster alert from Hindi to English. Return ONLY a JSON object with keys "title" and "content". Do not add any markdown or extra text.\n\nTitle: ${titleToTranslate}\nContent: ${textToTranslate}`
+        );
+        const raw = result.response.text().replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(raw);
+        return { ...alert, titleEn: parsed.title, contentSnippetEn: parsed.content };
+      } catch (e) {
+        console.warn('[Translation] Failed for alert, using original:', e.message);
+        return { ...alert, titleEn: alert.title, contentSnippetEn: alert.contentSnippet };
+      }
+    }));
+
+    res.json(translatedAlerts);
   } catch (err) {
     console.error('Error fetching official alerts:', err);
     res.status(500).json({ error: 'Failed to fetch alerts' });
@@ -242,6 +313,36 @@ app.get('/api/stats', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// Demo endpoint: trigger the 4-message AI dispatch instantly
+app.post('/api/demo-dispatch', async (req, res) => {
+  const demoPayload = {
+    id: 'demo-kedarnath',
+    name: 'Kedarnath Valley, Uttarakhand',
+    lang: 'hi',
+    score: 82,
+    tier: 'Evacuate',
+    confidence: 'High',
+    rainfall: 48.7,
+    rain6h: 112.4,
+    blockage: 'high',
+  };
+  try {
+    const advisory = await generateAdvisory(demoPayload, { name: demoPayload.name, lang: demoPayload.lang });
+    io.emit('advisoryUpdate', { id: demoPayload.id, advisory });
+    res.json({ success: true, advisory });
+  } catch (err) {
+    // fallback
+    const advisory = {
+      resident: `⚠️ THERE IS DANGER COMING TO YOU! PLEASE GO SOMEWHERE SAFE. केदारनाथ घाटी में बाढ़ का खतरा है — अभी ऊँचाई पर जाएँ और ज़रूरी दस्तावेज़ साथ लें।`,
+      officer: `EVACUATE tier detected at Kedarnath Valley. Risk Score: 82/100. Deploy rescue teams to NH-58, activate 3 relief camps at Sonprayag, Phata, and Guptkashi. Next check-in: 30 minutes.`,
+      worker: `URGENT — Kedarnath Valley: Clear blocked culvert on NH-58 near Gaurikund (GPS: 30.65, 79.06). Use protective gear. Report blockage severity to ops centre every 15 mins.`,
+      volunteer: `Go to the Ramesh Gusain household (no mobile phone) on the north side of Kedarnath bazaar. Knock firmly, explain in Hindi that flooding is imminent, and escort them to Sonprayag Relief Camp, 4km south.`
+    };
+    io.emit('advisoryUpdate', { id: demoPayload.id, advisory });
+    res.json({ success: true, advisory, note: 'Fallback used — Gemini API unavailable' });
   }
 });
 

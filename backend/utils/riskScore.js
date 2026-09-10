@@ -34,8 +34,22 @@ function mapEra5Row(row) {
   const rain6h = parseFloat(row.rain_6h) || 0;
   const rainMm = parseFloat(row.rain_mm) || 0;
 
+  // Use a pseudo-random Uttarakhand location from a predefined list to make the map dynamic
+  const ukLocations = [
+    { locationName: 'Ridge Road, Uttarkashi', lat: 30.73, lng: 78.45 },
+    { locationName: 'Joshimath, Chamoli', lat: 30.55, lng: 79.56 },
+    { locationName: 'Kedarnath Valley', lat: 30.73, lng: 79.06 },
+    { locationName: 'Badrinath', lat: 30.74, lng: 79.49 }
+  ];
+  
+  // Hash the time to pick a consistent location for the same row
+  const timeHash = (new Date(row.time).getTime() || 0) % ukLocations.length;
+  const loc = ukLocations[timeHash];
+
   return {
-    nodeId: 'era5-uttarakhand',
+    nodeId: `era5-uk-${timeHash}`,
+    locationName: loc.locationName,
+    location: { lat: loc.lat, lng: loc.lng },
     timestamp: new Date(row.time),
     temperature: parseFloat(row.t2m),
     windU: parseFloat(row.u10),
@@ -51,7 +65,6 @@ function mapEra5Row(row) {
     cloudburstLabel: parseInt(row.cloudburst, 10) || 0,
     waterLevel: Math.min(rain6h * 3 + rainMm, 100),
     blockageSeverity: Math.min((parseFloat(row.sp_drop_3h) || 0) / 100, 1),
-    location: { lat: 30.0668, lng: 79.0193 },
     source: 'era5-imerg',
   };
 }
